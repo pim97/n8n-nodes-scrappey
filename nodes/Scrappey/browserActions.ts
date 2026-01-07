@@ -798,16 +798,18 @@ export function buildBrowserActionsArray(actionsData: any): any[] {
 				baseAction.condition = action.condition;
 				try {
 					baseAction.then = JSON.parse(action.thenActions || '[]');
-				} catch {
-					baseAction.then = [];
+				} catch (error) {
+					throw new Error(`Invalid JSON in 'Then Actions' for 'if' action: ${error instanceof Error ? error.message : 'Unknown error'}. Please provide valid JSON array format.`);
 				}
-				try {
-					const orActions = JSON.parse(action.orActions || '[]');
-					if (orActions.length > 0) {
-						baseAction.or = orActions;
+				if (action.orActions && action.orActions.trim() !== '' && action.orActions.trim() !== '[]') {
+					try {
+						const orActions = JSON.parse(action.orActions);
+						if (Array.isArray(orActions) && orActions.length > 0) {
+							baseAction.or = orActions;
+						}
+					} catch (error) {
+						throw new Error(`Invalid JSON in 'Else Actions' for 'if' action: ${error instanceof Error ? error.message : 'Unknown error'}. Please provide valid JSON array format.`);
 					}
-				} catch {
-					// Ignore parse errors for optional or actions
 				}
 				break;
 
@@ -815,8 +817,8 @@ export function buildBrowserActionsArray(actionsData: any): any[] {
 				baseAction.condition = action.condition;
 				try {
 					baseAction.then = JSON.parse(action.thenActions || '[]');
-				} catch {
-					baseAction.then = [];
+				} catch (error) {
+					throw new Error(`Invalid JSON in 'Then Actions' for 'while' action: ${error instanceof Error ? error.message : 'Unknown error'}. Please provide valid JSON array format.`);
 				}
 				if (action.maxAttempts) baseAction.maxAttempts = action.maxAttempts;
 				break;
